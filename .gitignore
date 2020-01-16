@@ -133,3 +133,4 @@ dmypy.json
 
 # venv folder
 venv/
+.vscode/settings.json
