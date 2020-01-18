@@ -2,7 +2,7 @@
 Main for pyeloverblik
 '''
 import argparse
-from . import eloverblik
+from . import Eloverblik
 
 def main():
     '''
@@ -14,7 +14,7 @@ def main():
     
     args = parser.parse_args()
 
-    print(eloverblik.Eloverblik(args.refresh_token).getYesterDayNiceFormat(args.metering_point))
+    print(Eloverblik(args.refresh_token).get_time_series(args.metering_point))
 
 if __name__ == "__main__":
     main()
