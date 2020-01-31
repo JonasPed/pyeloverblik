@@ -3,7 +3,11 @@ Primary public module for eloverblik.dk API wrapper.
 '''
 from datetime import datetime
 from datetime import timedelta
+from requests.exceptions import HTTPError
 import requests
+from .models import RawResponse
+from .models import TimeSeries
+import json
 
 class Eloverblik:
     '''
@@ -43,17 +47,37 @@ class Eloverblik:
                                  data=body,
                                  headers=headers)
 
-        response.raise_for_status()
+        raw_response = RawResponse()
+        raw_response.status = response.status_code
+        raw_response.body = response.text
 
-        return response.json()
+        return raw_response
 
     def get_yesterday_parsed(self, metering_point):
-        raw_result = self.get_time_series(metering_point)
+        raw_data = self.get_time_series(metering_point)
 
-        response = dict()
+        if raw_data.status == 200:
+            json_response = json.loads(raw_data.body)
 
-        for k in raw_result['result'][0]['MyEnergyData_MarketDocument'] \
-            ['TimeSeries'][0]['Period'][0]['Point']:
-            response[k['position']] = k['out_Quantity.quantity']
+            result = self._parse_result(datetime.now()-timedelta(days=1), json_response)
+        else:
+            result = TimeSeries(raw_response.status, None, None, raw_response.body)
 
-        return response
+        return result
+
+    def _parse_result(self, date, result):
+        metering_data = []
+        if 'result' in result:
+            market_document = result['result'][0]['MyEnergyData_MarketDocument']
+
+            if 'TimeSeries' in market_document:
+                time_series = market_document['TimeSeries'][0]
+
+                if 'Period' in time_series:
+                    point = time_series['Period'][0]['Point']
+                    for i in point:
+                        metering_data.append(float(i['out_Quantity.quantity']))
+        
+        result = TimeSeries(200, date, metering_data)
+
+        return result

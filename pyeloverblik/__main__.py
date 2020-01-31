@@ -14,7 +14,14 @@ def main():
     
     args = parser.parse_args()
 
-    print(Eloverblik(args.refresh_token).get_time_series(args.metering_point))
+    result = Eloverblik(args.refresh_token).get_yesterday_parsed(args.metering_point)
 
+    total = 0
+    print(f"Date: {result.data_date}")
+    for x in range(24):
+        data = result.get_metering_data(x)
+        total += data
+        print(f"Hour {x}-{x+1}: {data}kWh")
+    print(f"Total: {total}kWh")
 if __name__ == "__main__":
     main()
