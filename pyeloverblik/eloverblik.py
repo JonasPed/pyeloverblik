@@ -67,17 +67,24 @@ class Eloverblik:
 
     def _parse_result(self, date, result):
         metering_data = []
-        if 'result' in result:
+
+        if 'result' in result and len(result['result'])  > 0:
             market_document = result['result'][0]['MyEnergyData_MarketDocument']
 
-            if 'TimeSeries' in market_document:
+            if 'TimeSeries' in market_document and len(market_document['TimeSeries']) > 0:
                 time_series = market_document['TimeSeries'][0]
 
-                if 'Period' in time_series:
+                if 'Period' in time_series and len(time_series['Period']) > 0:
                     point = time_series['Period'][0]['Point']
                     for i in point:
                         metering_data.append(float(i['out_Quantity.quantity']))
-        
-        result = TimeSeries(200, date, metering_data)
 
-        return result
+                    result = TimeSeries(200, date, metering_data)
+
+                    return result
+                else:
+                    return TimeSeries(404, None, None, f"Data most likely not available yet: {result}")
+            else:
+                return TimeSeries(404, None, None, f"Data most likely not available yet: {result}")
+        else:
+            return TimeSeries(404, None, None, f"Data most likely not available yet: {result}")

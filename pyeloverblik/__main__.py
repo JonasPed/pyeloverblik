@@ -22,6 +22,7 @@ def main():
         data = result.get_metering_data(x)
         total += data
         print(f"Hour {x}-{x+1}: {data}kWh")
+    
     print(f"Total: {total}kWh")
 if __name__ == "__main__":
     main()
