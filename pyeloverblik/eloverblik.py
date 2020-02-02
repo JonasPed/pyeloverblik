@@ -24,25 +24,17 @@ class Eloverblik:
         '''
         Call time series API on eloverblik.dk. Defaults to yester days data.
         '''
-        url = self._base_url + 'api/Token'
-        headers = {'Authorization': 'Bearer ' + self._refresh_token}
-        token_response = requests.get(url, headers=headers)
-        token_response.raise_for_status()
-
-        token_json = token_response.json()
-
-        short_token = token_json['result']
+        access_token = self._get_access_token()
 
         date_format = '%Y-%m-%d'
         parsed_from_date = from_date.strftime(date_format)
         parsed_to_date = to_date.strftime(date_format)
         body = "{\"meteringPoints\": {\"meteringPoint\": [\"" + meetering_point + "\"]}}"
 
-        headers = {'Authorization': 'Bearer ' + short_token,
-                   'Content-Type': 'application/json',
-                   'Accept': 'application/json'}
+        headers = self._create_headers(access_token)
 
-        response = requests.post(self._base_url + f'/api/MeterData/GetTimeSeries/{parsed_from_date}/{parsed_to_date}/{aggregation}',
+        response = requests.post(self._base_url + f'/api/MeterData/GetTimeSeries/ \
+                                    {parsed_from_date}/{parsed_to_date}/{aggregation}',
                                  data=body,
                                  headers=headers)
 
@@ -52,7 +44,28 @@ class Eloverblik:
 
         return raw_response
 
+    def _get_access_token(self):
+        url = self._base_url + 'api/Token'
+        headers = {'Authorization': 'Bearer ' + self._refresh_token}
+
+        token_response = requests.get(url, headers=headers)
+        token_response.raise_for_status()
+
+        token_json = token_response.json()
+
+        short_token = token_json['result']
+
+        return short_token
+
+    def _create_headers(self, access_token):
+        return {'Authorization': 'Bearer ' + access_token,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'}
+
     def get_yesterday_parsed(self, metering_point):
+        '''
+        Get data for yesterday and parse it.
+        '''
         raw_data = self.get_time_series(metering_point)
 
         if raw_data.status == 200:
@@ -65,6 +78,9 @@ class Eloverblik:
         return result
 
     def _parse_result(self, date, result):
+        '''
+        Parse result from API call.
+        '''
         metering_data = []
 
         if 'result' in result and len(result['result']) > 0:
@@ -86,9 +102,9 @@ class Eloverblik:
                                       None,
                                       f"Data most likely not available yet: {result}")
             else:
-                return TimeSeries(404, 
-                                  datetime.now()-timedelta(days=1), 
-                                  None, 
+                return TimeSeries(404,
+                                  datetime.now()-timedelta(days=1),
+                                  None,
                                   f"Data most likely not available yet: {result}")
         else:
             return TimeSeries(404, None, None, f"Data most likely not available yet: {result}")
