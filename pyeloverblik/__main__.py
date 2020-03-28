@@ -14,7 +14,7 @@ def main():
 
     args = parser.parse_args()
 
-    result = Eloverblik(args.refresh_token).get_yesterday_parsed(args.metering_point)
+    result = Eloverblik(args.refresh_token).get_latest(args.metering_point)
     if result.status == 200:
         total = 0
         print(f"Date: {result.data_date}")
