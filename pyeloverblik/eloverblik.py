@@ -71,17 +71,41 @@ class Eloverblik:
         if raw_data.status == 200:
             json_response = json.loads(raw_data.body)
 
-            result = self._parse_result(datetime.now()-timedelta(days=1), json_response)
+            result_dict = self._parse_result(json_response)
+            (key, value) = result_dict.popitem()
+            result = value
         else:
             result = TimeSeries(raw_data.status, None, None, raw_data.body)
 
         return result
 
-    def _parse_result(self, date, result):
+    def get_latest(self, metering_point):
+        '''
+        Get latest data. Will look for one week. 
+        '''
+        raw_data = self.get_time_series(metering_point, from_date=datetime.now()-timedelta(days=8))
+
+        if raw_data.status == 200:
+            json_response = json.loads(raw_data.body)
+
+            r = self._parse_result(json_response)
+
+            keys = list(r.keys())
+
+            keys.sort()
+            keys.reverse()
+
+            result = r[keys[0]]
+        else:
+            result = TimeSeries(raw_data.status, None, None, raw_data.body)
+
+        return result
+
+    def _parse_result(self, result):
         '''
         Parse result from API call.
         '''
-        metering_data = []
+        parsed_result = {}
 
         if 'result' in result and len(result['result']) > 0:
             market_document = result['result'][0]['MyEnergyData_MarketDocument']
@@ -89,22 +113,32 @@ class Eloverblik:
                 time_series = market_document['TimeSeries'][0]
 
                 if 'Period' in time_series and len(time_series['Period']) > 0:
-                    point = time_series['Period'][0]['Point']
-                    for i in point:
-                        metering_data.append(float(i['out_Quantity.quantity']))
+                    for period in time_series['Period']:                            
+                        metering_data = []
 
-                    result = TimeSeries(200, date, metering_data)
+                        point = period['Point']
+                        for i in point:
+                            metering_data.append(float(i['out_Quantity.quantity']))
 
-                    return result
+                        date = datetime.strptime(period['timeInterval']['end'], '%Y-%m-%dT%H:%M:%SZ')
+
+                        time_series = TimeSeries(200, date, metering_data)
+
+                        parsed_result[date] = time_series
                 else:
-                    return TimeSeries(404,
-                                      None,
-                                      None,
-                                      f"Data most likely not available yet: {result}")
+                    parsed_result['none'] = TimeSeries(404,
+                                               None,
+                                               None,
+                                               f"Data most likely not available yet-1: {result}")
             else:
-                return TimeSeries(404,
-                                  datetime.now()-timedelta(days=1),
+                parsed_result['none'] = TimeSeries(404,
                                   None,
-                                  f"Data most likely not available yet: {result}")
+                                  None,
+                                  f"Data most likely not available yet-2: {result}")
         else:
-            return TimeSeries(404, None, None, f"Data most likely not available yet: {result}")
+            parsed_result['none'] =  TimeSeries(404, 
+                              None, 
+                              None, 
+                              f"Data most likely not available yet-3: {result}")
+
+        return parsed_result
