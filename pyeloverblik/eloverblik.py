@@ -36,7 +36,9 @@ class Eloverblik:
         response = requests.post(self._base_url + f'/api/MeterData/GetTimeSeries/ \
                                     {parsed_from_date}/{parsed_to_date}/{aggregation}',
                                  data=body,
-                                 headers=headers)
+                                 headers=headers,
+                                 timeout=10
+                                 )
 
         raw_response = RawResponse()
         raw_response.status = response.status_code
