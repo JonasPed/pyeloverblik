@@ -37,7 +37,7 @@ class Eloverblik:
                                     {parsed_from_date}/{parsed_to_date}/{aggregation}',
                                  data=body,
                                  headers=headers,
-                                 timeout=10
+                                 timeout=5
                                  )
 
         raw_response = RawResponse()
@@ -50,7 +50,7 @@ class Eloverblik:
         url = self._base_url + 'api/Token'
         headers = {'Authorization': 'Bearer ' + self._refresh_token}
 
-        token_response = requests.get(url, headers=headers)
+        token_response = requests.get(url, headers=headers, timeout=5)
         token_response.raise_for_status()
 
         token_json = token_response.json()
@@ -107,6 +107,7 @@ class Eloverblik:
         '''
         Parse result from API call.
         '''
+        print(result)
         parsed_result = {}
 
         if 'result' in result and len(result['result']) > 0:
