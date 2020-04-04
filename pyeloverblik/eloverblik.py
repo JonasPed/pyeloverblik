@@ -85,7 +85,9 @@ class Eloverblik:
         '''
         Get latest data. Will look for one week. 
         '''
-        raw_data = self.get_time_series(metering_point, from_date=datetime.now()-timedelta(days=8))
+        raw_data = self.get_time_series(metering_point, 
+                                        from_date=datetime.now()-timedelta(days=8), 
+                                        to_date=datetime.now())
 
         if raw_data.status == 200:
             json_response = json.loads(raw_data.body)
