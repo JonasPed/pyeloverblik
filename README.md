@@ -1,2 +1,2 @@
 # pyeloverblik
-Python wrapper for eloverblik.dk api
+Python wrapper for eloverblik.dk api.

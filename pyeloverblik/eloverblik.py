@@ -40,7 +40,9 @@ class Eloverblik:
         response = requests.post(self._base_url + f'/api/MeterData/GetTimeSeries/ \
                                     {parsed_from_date}/{parsed_to_date}/{aggregation}',
                                  data=body,
-                                 headers=headers)
+                                 headers=headers,
+                                 timeout=5
+                                 )
 
         _LOGGER.debug(f"Response from API. Status: {response.status_code}, Body: {response.text}")
 
@@ -54,7 +56,7 @@ class Eloverblik:
         url = self._base_url + 'api/Token'
         headers = {'Authorization': 'Bearer ' + self._refresh_token}
 
-        token_response = requests.get(url, headers=headers)
+        token_response = requests.get(url, headers=headers, timeout=5)
         token_response.raise_for_status()
 
         token_json = token_response.json()
@@ -112,6 +114,7 @@ class Eloverblik:
         '''
         Parse result from API call.
         '''
+        print(result)
         parsed_result = {}
 
         if 'result' in result and len(result['result']) > 0:
