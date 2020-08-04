@@ -5,8 +5,11 @@ from datetime import datetime
 from datetime import timedelta
 import json
 import requests
+import logging
 from .models import RawResponse
 from .models import TimeSeries
+
+_LOGGER = logging.getLogger(__name__)
 
 class Eloverblik:
     '''
@@ -15,6 +18,7 @@ class Eloverblik:
     def __init__(self, refresh_token):
         self._refresh_token = refresh_token
         self._base_url = 'https://api.eloverblik.dk/CustomerApi/'
+
 
     def get_time_series(self,
                         meetering_point,
@@ -40,6 +44,8 @@ class Eloverblik:
                                  timeout=5
                                  )
 
+        _LOGGER.debug(f"Response from API. Status: {response.status_code}, Body: {response.text}")
+
         raw_response = RawResponse()
         raw_response.status = response.status_code
         raw_response.body = response.text
@@ -57,6 +63,7 @@ class Eloverblik:
 
         short_token = token_json['result']
 
+        _LOGGER.debug(f"Got short lived token: {short_token}")
         return short_token
 
     def _create_headers(self, access_token):
