@@ -116,7 +116,6 @@ class Eloverblik:
         '''
         Parse result from API call.
         '''
-        print(result)
         parsed_result = {}
 
         if 'result' in result and len(result['result']) > 0:
