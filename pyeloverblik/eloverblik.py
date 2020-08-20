@@ -22,12 +22,17 @@ class Eloverblik:
 
     def get_time_series(self,
                         meetering_point,
-                        from_date=datetime.now()-timedelta(days=1),
-                        to_date=datetime.now(),
+                        from_date=None,  # Will be set to yesterdat
+                        to_date=None,  # Will be set to today
                         aggregation='Hour'):
         '''
         Call time series API on eloverblik.dk. Defaults to yester days data.
         '''
+        if from_date is None:
+            from_date = datetime.now()-timedelta(days=1)
+        if to_date is None:
+            to_date = datetime.now()
+
         access_token = self._get_access_token()
 
         date_format = '%Y-%m-%d'
@@ -42,7 +47,7 @@ class Eloverblik:
                                  data=body,
                                  headers=headers,
                                  timeout=5
-                                 )
+        )
 
         _LOGGER.debug(f"Response from API. Status: {response.status_code}, Body: {response.text}")
 
@@ -90,10 +95,10 @@ class Eloverblik:
 
     def get_latest(self, metering_point):
         '''
-        Get latest data. Will look for one week. 
+        Get latest data. Will look for one week.
         '''
-        raw_data = self.get_time_series(metering_point, 
-                                        from_date=datetime.now()-timedelta(days=8), 
+        raw_data = self.get_time_series(metering_point,
+                                        from_date=datetime.now()-timedelta(days=8),
                                         to_date=datetime.now())
 
         if raw_data.status == 200:
@@ -124,7 +129,7 @@ class Eloverblik:
                 time_series = market_document['TimeSeries'][0]
 
                 if 'Period' in time_series and len(time_series['Period']) > 0:
-                    for period in time_series['Period']:                            
+                    for period in time_series['Period']:
                         metering_data = []
 
                         point = period['Point']
@@ -138,18 +143,18 @@ class Eloverblik:
                         parsed_result[date] = time_series
                 else:
                     parsed_result['none'] = TimeSeries(404,
-                                               None,
-                                               None,
-                                               f"Data most likely not available yet-1: {result}")
+                                                       None,
+                                                       None,
+                                                       f"Data most likely not available yet-1: {result}")
             else:
                 parsed_result['none'] = TimeSeries(404,
-                                  None,
-                                  None,
-                                  f"Data most likely not available yet-2: {result}")
+                                                   None,
+                                                   None,
+                                                   f"Data most likely not available yet-2: {result}")
         else:
-            parsed_result['none'] =  TimeSeries(404, 
-                              None, 
-                              None, 
-                              f"Data most likely not available yet-3: {result}")
+            parsed_result['none'] =  TimeSeries(404,
+                                                None,
+                                                None,
+                                                f"Data most likely not available yet-3: {result}")
 
         return parsed_result
