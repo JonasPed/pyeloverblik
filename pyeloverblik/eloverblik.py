@@ -22,7 +22,7 @@ class Eloverblik:
 
     def get_time_series(self,
                         meetering_point,
-                        from_date=None,  # Will be set to yesterdat
+                        from_date=None,  # Will be set to yesterday
                         to_date=None,  # Will be set to today
                         aggregation='Hour'):
         '''
