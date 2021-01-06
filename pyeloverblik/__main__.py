@@ -9,7 +9,7 @@ def main():
     '''
     Main method
     '''
-    parser = argparse.ArgumentParser("pydanfossair")
+    parser = argparse.ArgumentParser("pyeloverblik")
     parser.add_argument("--log", action="store", required=False)
     parser.add_argument("--refresh-token", action="store", required=True)
     parser.add_argument('--metering-point', action='store', required=True)
