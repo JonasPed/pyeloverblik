@@ -11,14 +11,15 @@ from .models import TimeSeries
 
 _LOGGER = logging.getLogger(__name__)
 
+
 class Eloverblik:
     '''
     Primary exported interface for eloverblik.dk API wrapper.
     '''
+
     def __init__(self, refresh_token):
         self._refresh_token = refresh_token
         self._base_url = 'https://api.eloverblik.dk/CustomerApi/'
-
 
     def get_time_series(self,
                         meetering_point,
@@ -38,18 +39,21 @@ class Eloverblik:
         date_format = '%Y-%m-%d'
         parsed_from_date = from_date.strftime(date_format)
         parsed_to_date = to_date.strftime(date_format)
-        body = "{\"meteringPoints\": {\"meteringPoint\": [\"" + meetering_point + "\"]}}"
+        body = "{\"meteringPoints\": {\"meteringPoint\": [\"" + \
+            meetering_point + "\"]}}"
 
         headers = self._create_headers(access_token)
 
-        response = requests.post(self._base_url + f'/api/MeterData/GetTimeSeries/ \
-                                    {parsed_from_date}/{parsed_to_date}/{aggregation}',
+        url = self._base_url + \
+            f'/api/MeterData/GetTimeSeries/{parsed_from_date}/{parsed_to_date}/{aggregation}'
+        response = requests.post(url,
                                  data=body,
                                  headers=headers,
                                  timeout=5
-        )
+                                 )
 
-        _LOGGER.debug(f"Response from API. Status: {response.status_code}, Body: {response.text}")
+        _LOGGER.debug(
+            f"Response from API. Status: {response.status_code}, Body: {response.text}")
 
         raw_response = RawResponse()
         raw_response.status = response.status_code
@@ -134,9 +138,11 @@ class Eloverblik:
 
                         point = period['Point']
                         for i in point:
-                            metering_data.append(float(i['out_Quantity.quantity']))
+                            metering_data.append(
+                                float(i['out_Quantity.quantity']))
 
-                        date = datetime.strptime(period['timeInterval']['end'], '%Y-%m-%dT%H:%M:%SZ')
+                        date = datetime.strptime(
+                            period['timeInterval']['end'], '%Y-%m-%dT%H:%M:%SZ')
 
                         time_series = TimeSeries(200, date, metering_data)
 
@@ -152,9 +158,9 @@ class Eloverblik:
                                                    None,
                                                    f"Data most likely not available yet-2: {result}")
         else:
-            parsed_result['none'] =  TimeSeries(404,
-                                                None,
-                                                None,
-                                                f"Data most likely not available yet-3: {result}")
+            parsed_result['none'] = TimeSeries(404,
+                                               None,
+                                               None,
+                                               f"Data most likely not available yet-3: {result}")
 
         return parsed_result
