@@ -8,9 +8,20 @@ import requests
 import logging
 from .models import RawResponse
 from .models import TimeSeries
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 _LOGGER = logging.getLogger(__name__)
 
+retry_strategy = Retry(
+    total=3,
+    status_forcelist=[400, 429, 500, 502, 503, 504],
+    method_whitelist=["GET", "POST"],
+    backoff_factor=60
+)
+adapter = HTTPAdapter(max_retries=retry_strategy)
+http = requests.Session()
+http.mount("https://", adapter)
 
 class Eloverblik:
     '''
@@ -46,7 +57,7 @@ class Eloverblik:
 
         url = self._base_url + \
             f'/api/MeterData/GetTimeSeries/{parsed_from_date}/{parsed_to_date}/{aggregation}'
-        response = requests.post(url,
+        response = http.post(url,
                                  data=body,
                                  headers=headers,
                                  timeout=5
@@ -65,7 +76,7 @@ class Eloverblik:
         url = self._base_url + 'api/Token'
         headers = {'Authorization': 'Bearer ' + self._refresh_token}
 
-        token_response = requests.get(url, headers=headers, timeout=5)
+        token_response = http.get(url, headers=headers, timeout=5)
         token_response.raise_for_status()
 
         token_json = token_response.json()
