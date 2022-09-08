@@ -46,7 +46,7 @@ class TimeSeries:
     
     def get_metering_data(self, index):
         '''
-        Get metering data for a single hour or hour.
+        Get metering data for a single hour or month.
         index=1: data between 00.00 and 01.00 if TimeSeries contains day data, or January if TimeSeries contains month data.
         index=4: data between 03.00 and 04.00 if TimeSeries contains day data, or April if TimeSeries contains month data.
         '''
