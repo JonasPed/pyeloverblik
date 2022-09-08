@@ -23,10 +23,10 @@ def main():
     if result.status == 200:
         total = 0
         print(f"Date: {result.data_date}")
-        for month in range(24):
-            data = result.get_metering_data(month)
+        for hour in range(24):
+            data = result.get_metering_data(hour)
             total += data
-            print(f"Hour {month}-{month+1}: {data}kWh")
+            print(f"Hour {hour}-{hour+1}: {data}kWh")
 
         print(f"Total: {total}kWh")
     else:
