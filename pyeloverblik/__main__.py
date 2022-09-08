@@ -2,6 +2,7 @@
 Main for pyeloverblik
 '''
 import argparse
+from datetime import datetime
 import logging
 from . import Eloverblik
 
@@ -28,6 +29,17 @@ def main():
             print(f"Hour {hour}-{hour+1}: {data}kWh")
 
         print(f"Total: {total}kWh")
+    else:
+        print(f"Error getting data. Status: {result.status}. Error: {result.detailed_status}")
+    
+    result = Eloverblik(args.refresh_token).get_per_month(args.metering_point)
+    if result.status == 200:
+        print(f"Date: {result.data_date}")
+        for month in range(1, datetime.today().month + 1):
+            data = result.get_metering_data(month)
+            print(f"Month {month}: {data}kWh")
+
+        print(f"Total: {result.get_total_metering_data()}kWh")
     else:
         print(f"Error getting data. Status: {result.status}. Error: {result.detailed_status}")
 

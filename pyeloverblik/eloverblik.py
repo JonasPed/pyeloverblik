@@ -4,6 +4,7 @@ Primary public module for eloverblik.dk API wrapper.
 from datetime import datetime
 from datetime import timedelta
 import json
+import re
 import requests
 import logging
 from .models import RawResponse
@@ -131,6 +132,35 @@ class Eloverblik:
             result = TimeSeries(raw_data.status, None, None, raw_data.body)
 
         return result
+
+    def get_per_month(self, metering_point, year=None):
+        '''
+        Get total consumption for each month in the given year, as well as the total for the year.
+        '''
+        if year is None:
+            year = datetime.today().year
+
+        if not re.match('\d{4}', str(year)):
+            raise ValueError("Year must be a four digit number.")
+
+        raw_data = self.get_time_series(metering_point,
+                                        from_date=datetime(year, 1, 1),
+                                        to_date=datetime(year, 12, 31) if year < datetime.today().year else datetime.today(),
+                                        aggregation='Month')
+        
+        if raw_data.status == 200:
+            json_response = json.loads(raw_data.body)
+
+            r = self._parse_result(json_response)
+            keys = list(r.keys())
+            keys.sort()
+
+            result = TimeSeries(raw_data.status, keys[-1], [r[k].get_total_metering_data() for k in keys])
+        else:
+            result = TimeSeries(raw_data.status, None, None, raw_data.body)
+
+        return result
+
 
     def _parse_result(self, result):
         '''
