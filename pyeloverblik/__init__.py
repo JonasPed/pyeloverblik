@@ -5,4 +5,4 @@ from .eloverblik import Eloverblik
 from .models import TimeSeries
 from .models import RawResponse
 
-__version__ = '0.1.2'
+__version__ = '0.2.0'
