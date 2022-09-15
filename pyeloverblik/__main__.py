@@ -19,6 +19,7 @@ def main():
 
     _configureLogging(args)
 
+    # Test hourly meter data.
     result = Eloverblik(args.refresh_token).get_latest(args.metering_point)
     if result.status == 200:
         total = 0
@@ -32,6 +33,7 @@ def main():
     else:
         print(f"Error getting data. Status: {result.status}. Error: {result.detailed_status}")
     
+    # Test monthly meter data.
     result = Eloverblik(args.refresh_token).get_per_month(args.metering_point)
     if result.status == 200:
         print(f"Date: {result.data_date}")
@@ -42,6 +44,15 @@ def main():
         print(f"Total: {result.get_total_metering_data()}kWh")
     else:
         print(f"Error getting data. Status: {result.status}. Error: {result.detailed_status}")
+    
+    # Test fees.
+    result = Eloverblik(args.refresh_token).get_fees(args.metering_point)
+    if result.status == 200:
+        for fee_name, fee_rate in result.charges.items():
+            print(f"Fee '{fee_name}': {fee_rate}kr/kWh")
+
+    else:
+        print(f"Error getting data. Status: {result.status}.")
 
 def _configureLogging(args):
     if args.log:
