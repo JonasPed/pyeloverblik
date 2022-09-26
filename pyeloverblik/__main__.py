@@ -46,7 +46,7 @@ def main():
         print(f"Error getting data. Status: {result.status}. Error: {result.detailed_status}")
     
     # Test fees.
-    result = Eloverblik(args.refresh_token).get_fees(args.metering_point)
+    result = Eloverblik(args.refresh_token).get_tariffs(args.metering_point)
     if result.status == 200:
         for fee_name, fee_rate in result.charges.items():
             print(f"Fee '{fee_name}': {fee_rate}kr/kWh")
