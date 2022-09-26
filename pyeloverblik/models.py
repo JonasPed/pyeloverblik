@@ -15,12 +15,12 @@ class RawResponse:
         self._status = status
 
     @property
-    def response(self):
-        return self._response
+    def body(self):
+        return self._body
 
-    @response.setter
-    def response(self, response):
-        self._response = response
+    @body.setter
+    def body(self, response):
+        self._body = response
 
 class TimeSeries:
     '''
@@ -58,3 +58,25 @@ class TimeSeries:
             total += v
 
         return total
+
+class Charges:
+    '''
+    Class representing parsed charges data.
+    '''
+    def __init__(self, status, charges, detailed_status=None):
+        self._status = status
+        self._charges = charges
+        self._detailed_status = detailed_status
+
+    @property
+    def status(self):
+        return self._status
+
+    @property
+    def detailed_status(self):
+        return self._detailed_status
+    
+    @property
+    def charges(self):
+        return self._charges
+    

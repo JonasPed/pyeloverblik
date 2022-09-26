@@ -4,11 +4,13 @@ Primary public module for eloverblik.dk API wrapper.
 from datetime import datetime
 from datetime import timedelta
 import json
+from os import access
 import re
 import requests
 import logging
 from .models import RawResponse
 from .models import TimeSeries
+from .models import Charges
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
@@ -24,10 +26,13 @@ adapter = HTTPAdapter(max_retries=retry_strategy)
 http = requests.Session()
 http.mount("https://", adapter)
 
+
 class Eloverblik:
     '''
     Primary exported interface for eloverblik.dk API wrapper.
     '''
+
+    _access_token_cache = (None, None)
 
     def __init__(self, refresh_token):
         self._refresh_token = refresh_token
@@ -73,7 +78,38 @@ class Eloverblik:
 
         return raw_response
 
+    def get_tariffs(self,
+                    metering_point):
+        '''
+        Call charges API on eloverblik.dk and extract tariffs. Note that this does not include subscriptions or fees.
+        '''
+
+        access_token = self._get_access_token()
+        headers = self._create_headers(access_token)
+        body = '{"meteringPoints": {"meteringPoint": ["' + metering_point + '"]}}'
+        url = self._base_url + '/api/meteringpoints/meteringpoint/getcharges'
+       
+        response = requests.post(url,
+                                 data=body,
+                                 headers=headers,
+                                 timeout=5
+                                 )
+
+        _LOGGER.debug(
+            f"Response from API. Status: {response.status_code}, Body: {response.text}")
+
+        if response.status_code == 200:
+            return self._parse_tariffs_from_charges_result(json.loads(response.text))
+        else:
+            return Charges(response.status_code, None, response.text)
+
     def _get_access_token(self):
+        cache_datetime, short_token = Eloverblik._access_token_cache
+
+        if cache_datetime is not None and datetime.today() - cache_datetime < timedelta(hours = 12):
+            _LOGGER.debug("Found valid token in cache.")
+            return short_token
+
         url = self._base_url + 'api/Token'
         headers = {'Authorization': 'Bearer ' + self._refresh_token}
 
@@ -81,8 +117,9 @@ class Eloverblik:
         token_response.raise_for_status()
 
         token_json = token_response.json()
-
         short_token = token_json['result']
+
+        Eloverblik._access_token_cache = (datetime.today(), short_token)
 
         _LOGGER.debug(f"Got short lived token: {short_token}")
         return short_token
@@ -205,3 +242,27 @@ class Eloverblik:
                                                f"Data most likely not available yet-3: {result}")
 
         return parsed_result
+
+    def _parse_tariffs_from_charges_result(self, result):
+        ''' 
+        Parse charges result from API call
+        '''
+
+        if 'result' in result and len(result['result']) > 0 and 'result' in result['result'][0] and 'tariffs' in result['result'][0]['result']:
+            charges = {}
+
+            for tariff in result['result'][0]['result']['tariffs']:
+                name = tariff['name'].lower().replace(' ', '_')
+
+                if tariff['periodType'] == 'P1D':
+                    charges[name] = tariff['prices'][0]['price']
+                elif tariff['periodType'] == 'PT1H':
+                    sorted_prices = [p['price'] for p in sorted(tariff['prices'], key=lambda d: d['position'])]
+                    charges[name] = sorted_prices
+                else:
+                    raise NotImplementedError(f"Unsupported periodType for tariff '{tariff['periodType']}")
+
+            return Charges(200, charges)
+
+        else:
+            return Charges(400, None);
