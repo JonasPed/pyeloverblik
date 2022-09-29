@@ -24,6 +24,9 @@ data = client.get_latest(METERING_POINT)
 or 
 
 client = Eloverblik(REFRESH_TOKEN)
-data = client.get_time_series(METERING_POINT, from_date='2021-01-01', to_date='2021-01-03', aggregation='Hour')
+data = client.get_time_series(METERING_POINT, from_date=datetime.now()-timedelta(days=2), to_date=datetime.now(), aggregation='Hour')
+
+# In above example from_date and to_date is datetime objects.
 
 ```
+
