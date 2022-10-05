@@ -257,7 +257,7 @@ class Eloverblik:
                 if tariff['periodType'] == 'P1D':
                     charges[name] = tariff['prices'][0]['price']
                 elif tariff['periodType'] == 'PT1H':
-                    sorted_prices = [p['price'] for p in sorted(tariff['prices'], key=lambda d: d['position'])]
+                    sorted_prices = [p['price'] for p in sorted(tariff['prices'], key=lambda d: int(d['position']))]
                     charges[name] = sorted_prices
                 else:
                     raise NotImplementedError(f"Unsupported periodType for tariff '{tariff['periodType']}")
