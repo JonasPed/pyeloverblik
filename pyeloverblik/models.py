@@ -1,3 +1,4 @@
+import datetime
 '''
 All model classes for pyeloverblik
 '''
@@ -80,3 +81,33 @@ class Charges:
     def charges(self):
         return self._charges
     
+class MeterReading:
+    '''
+    Class representing a meter reading.
+    '''
+    def __init__(self, status: int, reading: str, reading_date: datetime.datetime, measurement_unit: str = None, detailed_status=None) -> None:
+        self._status = status
+        self._reading = reading
+        self._reading_date = reading_date
+        self._measurement_unit = measurement_unit
+        self._detailed_status = detailed_status
+
+    @property
+    def status(self):
+        return self._status
+
+    @property
+    def reading(self):
+        return self._reading
+
+    @property
+    def reading_date(self):
+        return self._reading_date
+
+    @property
+    def detailed_status(self):
+        return self._detailed_status
+
+    @property
+    def measurement_unit(self):
+        return self._measurement_unit
