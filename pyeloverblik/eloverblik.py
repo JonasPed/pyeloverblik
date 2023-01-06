@@ -11,6 +11,7 @@ import logging
 from .models import RawResponse
 from .models import TimeSeries
 from .models import Charges
+from .models import MeterReading
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
@@ -102,6 +103,57 @@ class Eloverblik:
             return self._parse_tariffs_from_charges_result(json.loads(response.text))
         else:
             return Charges(response.status_code, None, response.text)
+
+    def get_meter_reading_latest(self, metering_point):
+        '''
+        Call meter readin API on eloverblik.dk and get latest meter reading. 
+        '''
+        access_token = self._get_access_token()
+
+        date_format = '%Y-%m-%d'
+        parsed_from_date = (datetime.now()-timedelta(days=60)).strftime(date_format)
+        parsed_to_date = datetime.now().strftime(date_format)
+
+        access_token = self._get_access_token()
+        headers = self._create_headers(access_token)
+
+        body = '{"meteringPoints": {"meteringPoint": ["' + metering_point + '"]}}'
+
+        url = self._base_url + f'/api/meterdata/getmeterreadings/{parsed_from_date}/{parsed_to_date}'
+
+        response = requests.post(url, data=body, headers=headers, timeout=10)
+
+        _LOGGER.debug(f"Response from API. Status: {response.status_code}, Body: {response.text}")
+
+        if response.status_code == 200:
+            return self._parse_meter_reading(json.loads(response.text))
+        else:
+            return MeterReading(response.status_code, None, None, response.text)
+
+    def _parse_meter_reading(self, reading) -> MeterReading:
+        ''' 
+        Parse meter reading result from API call
+        '''
+
+        if 'result' in reading and len(reading['result']) > 0 and 'result' in reading['result'][0] and 'readings' in reading['result'][0]['result'] and len(reading['result'][0]['result']) > 0:
+            
+            readings = {}
+
+            for r in reading['result'][0]['result']['readings']:
+                re = MeterReading(200, r['meterReading'], r['readingDate'], r['measurementUnit'])
+
+                readings[r['readingDate']] = re
+
+            sortedList = sorted(readings)
+
+            if len(sortedList) > 0:
+                x = sortedList.pop()
+                return readings[x]
+            else: 
+                return MeterReading(404, None, None, detailed_status="No readings found in result.")
+
+        else:
+            return MeterReading(404, None, None, detailed_status="Result does not contain any readings.");
 
     def _get_access_token(self):
         cache_datetime, short_token = Eloverblik._access_token_cache

@@ -50,9 +50,15 @@ def main():
     if result.status == 200:
         for fee_name, fee_rate in result.charges.items():
             print(f"Fee '{fee_name}': {fee_rate}kr/kWh")
-
     else:
         print(f"Error getting data. Status: {result.status}.")
+
+    # Get latest metering date
+    result = Eloverblik(args.refresh_token).get_meter_reading_latest(args.metering_point)
+    if result.status == 200:
+        print(f"Meter reading: {result.reading}{result.measurement_unit} at {result.reading_date}. ")
+    else:
+        print(f"Error getting meter reading. Status: {result.status}")
 
 def _configureLogging(args):
     if args.log:
