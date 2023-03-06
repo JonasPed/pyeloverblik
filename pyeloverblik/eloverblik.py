@@ -111,7 +111,7 @@ class Eloverblik:
         access_token = self._get_access_token()
 
         date_format = '%Y-%m-%d'
-        parsed_from_date = (datetime.now()-timedelta(days=60)).strftime(date_format)
+        parsed_from_date = (datetime.now()-timedelta(days=90)).strftime(date_format)
         parsed_to_date = datetime.now().strftime(date_format)
 
         access_token = self._get_access_token()
