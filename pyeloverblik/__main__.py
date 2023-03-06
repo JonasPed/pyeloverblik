@@ -20,6 +20,7 @@ def main():
     _configureLogging(args)
 
     # Get and print hourly meter data.
+    print("Hourly data")
     result = Eloverblik(args.refresh_token).get_latest(args.metering_point)
     if result.status == 200:
         total = 0
@@ -34,6 +35,7 @@ def main():
         print(f"Error getting data. Status: {result.status}. Error: {result.detailed_status}")
     
     # Get and pring monthly meter data.
+    print("Monthly data")
     result = Eloverblik(args.refresh_token).get_per_month(args.metering_point)
     if result.status == 200:
         print(f"Date: {result.data_date}")
@@ -46,6 +48,7 @@ def main():
         print(f"Error getting data. Status: {result.status}. Error: {result.detailed_status}")
     
     # Get and print fees.
+    print("Fees")
     result = Eloverblik(args.refresh_token).get_tariffs(args.metering_point)
     if result.status == 200:
         for fee_name, fee_rate in result.charges.items():
@@ -54,6 +57,7 @@ def main():
         print(f"Error getting data. Status: {result.status}.")
 
     # Get latest metering date
+    print("Latest meter reading")
     result = Eloverblik(args.refresh_token).get_meter_reading_latest(args.metering_point)
     if result.status == 200:
         print(f"Meter reading: {result.reading}{result.measurement_unit} at {result.reading_date}. ")
