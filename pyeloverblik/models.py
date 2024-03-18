@@ -53,6 +53,9 @@ class TimeSeries:
         '''
         return self._metering_data[index-1]
 
+    def get_all_metering_data(self):
+        return self._metering_data
+
     def get_total_metering_data(self):
         total = 0
         for v in self._metering_data:
