@@ -37,7 +37,7 @@ class Eloverblik:
 
     def __init__(self, refresh_token):
         self._refresh_token = refresh_token
-        self._base_url = 'https://api.eloverblik.dk/CustomerApi/'
+        self._base_url = 'https://api.eloverblik.dk/CustomerApi'
 
     def get_time_series(self,
                         meetering_point,
@@ -45,7 +45,7 @@ class Eloverblik:
                         to_date=None,  # Will be set to today
                         aggregation='Hour'):
         '''
-        Call time series API on eloverblik.dk. Defaults to yester days data.
+        Call time series API on eloverblik.dk. Defaults to yesterdays data.
         '''
         if from_date is None:
             from_date = datetime.now()-timedelta(days=1)
@@ -64,6 +64,7 @@ class Eloverblik:
 
         url = self._base_url + \
             f'/api/MeterData/GetTimeSeries/{parsed_from_date}/{parsed_to_date}/{aggregation}'
+        print('URL: %s' % url)
         response = http.post(url,
                                  data=body,
                                  headers=headers,
@@ -162,7 +163,7 @@ class Eloverblik:
             _LOGGER.debug("Found valid token in cache.")
             return short_token
 
-        url = self._base_url + 'api/Token'
+        url = self._base_url + '/api/Token'
         headers = {'Authorization': 'Bearer ' + self._refresh_token}
 
         token_response = http.get(url, headers=headers, timeout=5)
@@ -272,7 +273,7 @@ class Eloverblik:
                                 float(i['out_Quantity.quantity']))
 
                         date = datetime.strptime(
-                            period['timeInterval']['end'], '%Y-%m-%dT%H:%M:%SZ')
+                            period['timeInterval']['start'], '%Y-%m-%dT%H:%M:%SZ')
 
                         time_series = TimeSeries(200, date, metering_data)
 
