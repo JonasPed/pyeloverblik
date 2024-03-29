@@ -272,7 +272,7 @@ class Eloverblik:
                                 float(i['out_Quantity.quantity']))
 
                         date = datetime.strptime(
-                            period['timeInterval']['end'], '%Y-%m-%dT%H:%M:%SZ')
+                            period['timeInterval']['end'], '%Y-%m-%dT%H:%M:%S%z')
 
                         time_series = TimeSeries(200, date, metering_data)
 
