@@ -19,9 +19,9 @@ _LOGGER = logging.getLogger(__name__)
 
 retry_strategy = Retry(
     total=3,
-    status_forcelist=[400, 429, 500, 502, 503, 504],
-    method_whitelist=["GET", "POST"],
-    backoff_factor=60
+    status_forcelist=[429, 500, 502, 503, 504],
+    allowed_methods=["GET", "POST"],
+    backoff_factor=10
 )
 adapter = HTTPAdapter(max_retries=retry_strategy)
 http = requests.Session()
@@ -229,7 +229,7 @@ class Eloverblik:
         if year is None:
             year = datetime.today().year
 
-        if not re.match('\d{4}', str(year)):
+        if not re.match(r'\d{4}', str(year)):
             raise ValueError("Year must be a four digit number.")
 
         raw_data = self.get_time_series(metering_point,
