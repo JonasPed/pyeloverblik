@@ -229,7 +229,7 @@ class Eloverblik:
         if year is None:
             year = datetime.today().year
 
-        if not re.match('\d{4}', str(year)):
+        if not re.match(r'\d{4}', str(year)):
             raise ValueError("Year must be a four digit number.")
 
         raw_data = self.get_time_series(metering_point,
