@@ -20,7 +20,7 @@ _LOGGER = logging.getLogger(__name__)
 retry_strategy = Retry(
     total=3,
     status_forcelist=[400, 429, 500, 502, 503, 504],
-    method_whitelist=["GET", "POST"],
+    allowed_methods=["GET", "POST"],
     backoff_factor=60
 )
 adapter = HTTPAdapter(max_retries=retry_strategy)
