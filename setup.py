@@ -21,5 +21,7 @@ setup(
     author_email='jonas@pedersen.ninja',
     license='Apache 2.0',
     packages=['pyeloverblik'],
-    install_requires=['requests']
+    install_requires=[
+        'requests>=2.32.3'
+    ]
     )
